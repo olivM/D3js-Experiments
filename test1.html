@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+
+	<script type="text/javascript" src="../src/d3.js"></script>
+
+
+<style>
+
+text {
+  font: bold 18px monospace;
+}
+
+
+
+</style>
+
+</head>
+
+<body>
+
+	<script type="text/javascript">
+
+var width = document.width * 0.9;
+var height = document.height * 0.9 - 120;
+
+var svg = d3.select('body').append('svg')
+	.attr("width", width)
+	.attr("height", height)
+	.append('g').attr('id', 'container');
+
+
+var legend = d3.select('body').append('svg');
+
+var color = d3.scale.category20();
+
+data = d3.csv("sets/lyceeFR.csv",function(csv) {
+
+var villes = d3.nest().key(function(d){return d.ville;}).entries(csv);
+console.log(villes.length);
+console.log(villes);
+
+
+legend.selectAll('text').data(villes).enter().append('svg:text')
+	.text(function(d){return  d.key;})
+    .attr("fill", function(d) { return color(d.key);})
+    .attr("y", function(d, i) {return 50 + i%6*20; })
+    .attr("x", function(d, i) { return Math.floor(i/6) * 200; })
+	;
+
+
+var maxEffectif = d3.max(csv,function(d, i) { return parseFloat(d.effectif);}),
+    minEffectif = d3.min(csv,function(d, i) { return parseFloat(d.effectif);});
+
+console.log("max effectif : " + maxEffectif);
+
+console.log("min effectif : " + minEffectif);
+
+var margin = 10;
+
+x = d3.scale.linear().domain([minEffectif, maxEffectif]).range([margin, width-margin]);
+y = d3.scale.linear().domain([40, 100]).range([height-margin, 0+margin]);
+
+svg.selectAll('.dot').data(csv).enter().append('circle')
+
+    .attr("cx", function(d, i) {return x(d.effectif); })
+    .attr("cy", function(d, i) {return y(d.success); })
+    .attr("r", 3)
+    .attr("alt", function(d) { return d.lycee; })
+    .attr("fill",function(d) { return color(d.ville);})
+    .on('mouseover', function(d){ console.log(d.lycee + " " + d.ville + " " + d.type + " " + d.success + " " + d.effectif); })
+    ;
+
+/*
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .ticks(100);
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickPadding(100);
+    
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + y.range()[0] + ")")
+    .call(xAxis);
+
+svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);
+*/
+
+// typed_lycees = d3.nest().key(function(d){return d['type']}).map(csv);
+
+});
+
+
+
+
+	</script>
+
+</body>
